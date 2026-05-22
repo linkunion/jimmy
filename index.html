@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>💎 全球跨市场流动性最终移动终端</title>
+    <style>
+        :root {
+            --bg-color: #0b0e11;
+            --card-bg: #181a20;
+            --text-main: #eaecef;
+            --text-muted: #848e9c;
+            --theme-color: #f0b90b;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0; padding: 12px;
+            box-sizing: border-box;
+        }
+        .header {
+            text-align: center; font-size: 16px; font-weight: bold;
+            color: var(--theme-color); margin-bottom: 12px;
+            border-bottom: 1px solid #2b2f36; padding-bottom: 8px;
+        }
+        .section-title {
+            font-size: 11px; color: #474d57; text-transform: uppercase;
+            margin: 10px 0 4px 4px; font-weight: bold;
+        }
+        .card {
+            background-color: var(--card-bg); border-radius: 8px;
+            padding: 4px 8px; margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 4px; border-bottom: 1px solid #2b2f36;
+            font-size: 14px;
+        }
+        .row:last-child { border-bottom: none; }
+        .label { display: flex; align-items: center; gap: 6px; }
+        .value { font-weight: 500; }
+        .up { color: #0ecb81; font-weight: bold; }
+        .down { color: #f6465d; font-weight: bold; }
+        
+        /* 衍生品与信号板 */
+        .deriv-box { font-size: 13px; line-height: 1.6; }
+        .signal-title { font-weight: bold; margin-top: 6px; font-size: 14px;}
+        .matrix-container {
+            display: flex; gap: 4px; margin-top: 8px; width: 100%;
+        }
+        .matrix-block {
+            flex: 1; height: 14px; border-radius: 2px;
+            background-color: #2b2f36; transition: all 0.3s ease;
+        }
+        .matrix-block.green-active { background-color: #0ecb81; box-shadow: 0 0 6px #0ecb81; }
+        .matrix-block.red-active { background-color: #f6465d; box-shadow: 0 0 6px #f6465d; }
+        .matrix-block.white-active { background-color: #eaecef; box-shadow: 0 0 6px #eaecef; }
+        .status-desc { font-size: 12px; margin-top: 6px; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+
+    <div class="header">💎 全球多时区跨市场流动性移动终端</div>
+
+    <div class="section-title">🪙 核心数字资产监控</div>
+    <div class="card" id="crypto-assets">
+        <div class="row"><span class="label">BNB 现货核心</span><span class="value" id="price-BNB">加载中...</span></div>
+        <div class="row"><span class="label">BTC 锚定大盘</span><span class="value" id="price-BTC">加载中...</span></div>
+        <div class="row"><span class="label">ETH 锚定二哥</span><span class="value" id="price-ETH">加载中...</span></div>
+    </div>
+
+    <div class="section-title">📊 宏观流动性与大宗总闸</div>
+    <div class="card">
+        <div class="row"><span class="label">📊 USDT.D 稳定币市占</span><span class="value" id="tv-USDTD">加载中...</span></div>
+        <div class="row"><span class="label">📊 BTC.D 大饼市值市占</span><span class="value" id="tv-BTCD">加载中...</span></div>
+        <div class="row"><span class="label">💵 DXY 美元指数总闸</span><span class="value" id="tv-DXY">加载中...</span></div>
+        <div class="row"><span class="label">🇺🇸 US10Y 十年期美债</span><span class="value" id="tv-US10Y">加载中...</span></div>
+        <div class="row"><span class="label">🛢️ USOIL 原油差价合约</span><span class="value" id="f-USOIL">加载中...</span></div>
+    </div>
+
+    <div class="section-title">⚔️ 筹码衍生品与能量雷达</div>
+    <div class="card" style="padding: 12px 8px;">
+        <div class="deriv-box">
+            <div>📊 BNB 现货24H成交额: <span id="bnb-vol" style="color:#0ecb81; font-weight:bold;">--</span></div>
+            <div>📊 全网合约持仓 (OI): <span id="bnb-oi" style="color:#f0b90b; font-weight:bold;">--</span></div>
+            <div>💸 实时合约资金费率 (FR): <span id="bnb-fr" style="color:#f0b90b; font-weight:bold;">--</span></div>
+            <div style="margin-top: 4px; border-top: 1px dashed #2b2f36; padding-top: 4px;">
+                🚨 24H强平估算 -> <span style="color:#f6465d;">多头: <span id="liq-long">--</span></span> | <span style="color:#0ecb81;">空头: <span id="liq-short">--</span></span>
+            </div>
+        </div>
+        
+        <div class="signal-title" id="signal-header">⬜ 实战策略信号：初始化中</div>
+        <div class="matrix-container" id="matrix-row">
+            <div class="matrix-block"></div><div class="matrix-block"></div><div class="matrix-block"></div><div class="matrix-block"></div><div class="matrix-block"></div>
+            <div class="matrix-block"></div><div class="matrix-block"></div><div class="matrix-block"></div><div class="matrix-block"></div><div class="matrix-block"></div>
+        </div>
+        <div class="status-desc" id="status-desc">等待数据同步点火...</div>
+    </div>
+
+    <script>
+        // 核心量化动态缓存
+        let cache = { bnb_c:0, dxy_c:0, btcd_c:0, fr:0, oil_c:0 };
+
+        async function fetchBinanceSpot() {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BNBUSDT","BTCUSDT","ETHUSDT"]');
+                const data = await res.json();
+                data.forEach(item => {
+                    const symbol = item.symbol.replace('USDT', '');
+                    const price = parseFloat(item.lastPrice).toFixed(2);
+                    const change = parseFloat(item.priceChangePercent);
+                    const changeClass = change >= 0 ? 'up' : 'down';
+                    document.getElementById(`price-${symbol}`).innerHTML = `$${price} <span class="${changeClass}">(${change >= 0 ? '+' : ''}${change.toFixed(2)}%)</span>`;
+                    if(symbol === 'BNB') {
+                        cache.bnb_c = change;
+                        document.getElementById('bnb-vol').innerText = `$${(parseFloat(item.quoteVolume)/1000000).toFixed(2)}M USD`;
+                    }
+                });
+            } catch(e) {}
+        }
+
+        async function fetchBinanceFutures() {
+            try {
+                // 1. 抓取原油期货
+                const oilRes = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=CLUSDT');
+                const oilData = await oilRes.json();
+                const oilP = parseFloat(oilData.lastPrice).toFixed(2);
+                const oilC = parseFloat(oilData.priceChangePercent);
+                cache.oil_c = oilC;
+                document.getElementById('f-USOIL').innerHTML = `$${oilP} <span class="${oilC >= 0 ? 'up' : 'down'}">${oilC >= 0 ? '+' : ''}${oilC.toFixed(2)}%</span>`;
+
+                // 2. 抓取BNB持仓和费率
+                const oiRes = await fetch('https://fapi.binance.com/fapi/v1/openInterest?symbol=BNBUSDT');
+                const oiData = await oiRes.json();
+                const oiBase = parseFloat(oiData.openInterest);
+
+                const frRes = await fetch('https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BNBUSDT');
+                const frData = await frRes.json();
+                const fr = parseFloat(frData.lastFundingRate) * 100;
+                const markPrice = parseFloat(frData.markPrice);
+                cache.fr = fr;
+
+                document.getElementById('bnb-oi').innerText = `$${((oiBase * markPrice)/1000000).toFixed(2)}M USD`;
+                document.getElementById('bnb-fr').innerText = `${fr > 0 ? '+' : ''}${fr.toFixed(4)}%`;
+
+                // 估算爆仓
+                let totalLiq = Math.abs(cache.bnb_c) * ((oiBase * markPrice) * 0.001);
+                if (cache.bnb_c < 0) {
+                    document.getElementById('liq-long').innerText = `$${(totalLiq/1000).toFixed(1)}K`;
+                    document.getElementById('liq-short').innerText = `$${((totalLiq*0.15)/1000).toFixed(1)}K`;
+                } else {
+                    document.getElementById('liq-short').innerText = `$${(totalLiq/1000).toFixed(1)}K`;
+                    document.getElementById('liq-long').innerText = `$${((totalLiq*0.15)/1000).toFixed(1)}K`;
+                }
+            } catch(e) {}
+        }
+
+        async function fetchTradingView() {
+            try {
+                const res = await fetch("https://scanner.tradingview.com/global/scan", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "symbols": {"tickers": ["CRYPTOCAP:USDT.D", "CRYPTOCAP:BTC.D", "TVC:DXY", "TVC:US10Y"], "query": {"types": []}},
+                        "columns": ["close", "change"]
+                    })
+                });
+                const response = await res.json();
+                const mapping = {"CRYPTOCAP:USDT.D":"USDTD", "CRYPTOCAP:BTC.D":"BTCD", "TVC:DXY":"DXY", "TVC:US10Y":"US10Y"};
+                response.data.forEach(item => {
+                    const id = mapping[item.s];
+                    const p = item.d[0];
+                    const c = item.d[1];
+                    let changeClass = c >= 0 ? 'up' : 'down';
+                    if(id === 'USDTD' || id === 'DXY' || id === 'US10Y') changeClass = c >= 0 ? 'down' : 'up'; // 反向流动性资产
+                    
+                    document.getElementById(`tv-${id}`).innerHTML = `${p.toFixed(2)}${id==='USDTD'||id==='BTCD'||id==='US10Y'?'%':''} <span class="${changeClass}">${c >= 0 ? '+' : ''}${c.toFixed(2)}%</span>`;
+                    if(id === 'DXY') cache.dxy_c = c;
+                    if(id === 'BTCD') cache.btcd_c = c;
+                });
+            } catch(e) {}
+        }
+
+        function updateSignalMatrix() {
+            let score = 0;
+            if (cache.bnb_c > 0) {
+                score += 2;
+                if (cache.dxy_c < 0) score += 2;
+                if (cache.btcd_c < 0) score += 2;
+                if (cache.fr <= 0.015) score += 2;
+                if (cache.oil_c < 0) score += 1;
+            }
+            if (cache.bnb_c > 0 && cache.dxy_c > 0.1) score -= 4;
+            if (cache.bnb_c > 0 && cache.fr > 0.02) score -= 3;
+            if (cache.oil_c > 0.5 && cache.dxy_c > 0.1) score -= 3;
+            if (cache.bnb_c < 0) {
+                score -= 2;
+                if (cache.dxy_c > 0) score -= 2;
+            }
+
+            const blocks = document.querySelectorAll('.matrix-block');
+            blocks.forEach(b => b.className = 'matrix-block'); // 重置
+
+            const header = document.getElementById('signal-header');
+            const desc = document.getElementById('status-desc');
+
+            if (score > 0) {
+                const count = Math.min(score, 10);
+                header.innerText = `🟩 实战策略信号：[完美主升浪剧本] (${count}/10)`;
+                header.style.color = '#0ecb81';
+                desc.innerText = "利润奔跑，全球宏观给路，安心持有多单。";
+                for(let i=0; i<count; i++) blocks[i].classList.add('green-active');
+            } else if (score < 0) {
+                const count = Math.min(Math.abs(score), 10);
+                header.innerText = `🟥 实战策略信号：[高危/异常诱多剧本] (${count}/10)`;
+                header.style.color = '#f6465d';
+                desc.innerText = "USOIL/DXY背离见顶，庄家高位虚火，死守651防线！";
+                for(let i=0; i<count; i++) blocks[i].classList.add('red-active');
+            } else {
+                header.innerText = "⬜ 实战策略信号：[多空博弈震荡剧本]";
+                header.style.color = '#eaecef';
+                desc.innerText = "盘面处于多空均衡时间，无视日内杂音，耐心持有。";
+                blocks.forEach(b => b.classList.add('white-active'));
+            }
+        }
+
+        async function startRadar() {
+            await Promise.all([fetchBinanceSpot(), fetchBinanceFutures(), fetchTradingView()]);
+            updateSignalMatrix();
+        }
+
+        startRadar();
+        setInterval(startRadar, 4000); // 4秒高频无感刷新
+    </script>
+</body>
+</html>
